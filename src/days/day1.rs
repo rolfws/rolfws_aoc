@@ -60,7 +60,7 @@ pub fn part_1_old(inp: String) -> usize {
         .fold(0usize, |acc, (l, r)| acc + l.abs_diff(r))
 }
 
-fn part_1(inp: &str) -> u32 {
+pub fn part1(inp: &str) -> u32 {
     let (mut l_list, mut r_list) = unpack_inp_opt(inp);
     l_list.sort_unstable();
     r_list.sort_unstable();
@@ -122,7 +122,7 @@ fn day_1_part_2_solve(lsts:&(Vec<u32>, Vec<u32>)) -> u32 {
     })
 }
 
-pub fn part_2(inp: &str) -> u32 {
+pub fn part2(inp: &str) -> u32 {
     let (l_list, r_list) = unpack_inp_opt(inp);
     let (l_freq, r_freq) = (freq_map_opt(&l_list), freq_map_opt(&r_list));
     l_freq.iter().fold(0, |acc, (val, cnt_l)| {
@@ -137,5 +137,5 @@ pub fn part_2(inp: &str) -> u32 {
 
 fn part_1_test() -> u32 {
     let inp = load_day(1, true);
-    part_1(&inp)
+    part1(&inp)
 }

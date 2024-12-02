@@ -3,3 +3,5 @@
 .idea
 /input
 /inputs
+*flamegraph.svg
+*perf*
