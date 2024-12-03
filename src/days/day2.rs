@@ -1,15 +1,15 @@
-#![allow(unused)]
+// #![allow(unused)]
 
 use aoc_runner_derive::{aoc, aoc_generator};
 
 #[aoc_generator(day2)]
-fn unpack_inp_split(inp: &str) -> (Vec<i8>, Vec<usize>) {
+fn unpack_inp_split(inp: &[u8]) -> (Vec<i8>, Vec<usize>) {
     let mut out: Vec<i8> = Vec::with_capacity(8000);
     let mut out_len: Vec<usize> = Vec::with_capacity(1001);
     out_len.push(0);
     let mut to_push = 0i8;
     let mut cnt = 0;
-    for c in inp.bytes() {
+    for c in inp {
         match c {
             b'\n' => {
                 cnt += 1;
@@ -31,28 +31,6 @@ fn unpack_inp_split(inp: &str) -> (Vec<i8>, Vec<usize>) {
     out_len.push(cnt);
 
     (out, out_len)
-}
-
-
-// #[aoc_generator(day2)]
-fn unpack_inp_unsafe(inp: &str) -> Vec<Vec<i8>> {
-    let mut out: Vec<Vec<i8>> = Vec::with_capacity(1000);
-    for line in inp.lines().take(1000) {
-        let mut ints = Vec::<i8>::with_capacity(8);
-        let mut to_push = 0i8;
-        for c in line.bytes() {
-            if c.is_ascii_whitespace() {
-                ints.push(to_push);
-                to_push = 0;
-            } else {
-                to_push *= 10;
-                to_push += (c - b'0') as i8;
-            }
-        };
-        ints.push(to_push);
-        out.push(ints);
-    }
-    out
 }
 
 fn safe_incrb(slc: &[i8]) -> bool {
@@ -83,15 +61,15 @@ fn safe_slc(slc: &[i8]) -> bool {
     }
 }
 
-// #[aoc(day2, part1)]
-fn part1_work(lns: &[Vec<i8>]) -> u32 {
-    lns.iter()
-        .fold(0u32, |acc, slc| if safe_slc(slc) { acc + 1 } else { acc })
-}
-
 #[aoc(day2, part1)]
-fn part1_work2(inp: &(Vec<i8>, Vec<usize>)) -> u32 {
-    inp.1.windows(2).fold(0u32, |acc, p| if safe_slc(&inp.0[p[0]..p[1]]) { acc + 1 } else { acc })
+fn part1_work(inp: &(Vec<i8>, Vec<usize>)) -> u32 {
+    inp.1.windows(2).fold(0u32, |acc, p| {
+        if safe_slc(&inp.0[p[0]..p[1]]) {
+            acc + 1
+        } else {
+            acc
+        }
+    })
 }
 
 #[derive(Debug)]
@@ -130,10 +108,10 @@ fn safe_part2(slc: &[i8]) -> u32 {
             (-3..=-1, Direction::Decr) => {}
             (-3..=-1, Direction::Unkn) => dir = Direction::Decr,
             _ => {
-                if (j == slc.len() - 1)
-                    | safe_skipped(slc, j - 1)
-                    | safe_skipped(slc, j)
-                    | (j == 2 && safe_slc(&slc[1..]))
+                if (j == slc.len() - 1)         // Last is wrong, but that is okay
+                    | safe_skipped(slc, j - 1)  // Check if safe if we skip left,
+                    | safe_skipped(slc, j)      // or right
+                    | (j == 2 && safe_slc(&slc[1..])) // First step was safe, but in wrong direction.
                 {
                     return 1;
                 } else {
@@ -145,29 +123,17 @@ fn safe_part2(slc: &[i8]) -> u32 {
     1
 }
 
-// #[aoc(day2, part2)]
-fn part2_work(lns: &[Vec<i8>]) -> u32 {
-    lns.iter().fold(0u32, |acc, slc| acc + safe_part2(slc))
-}
-
 #[aoc(day2, part2)]
-fn part2_work2(inp: &(Vec<i8>, Vec<usize>)) -> u32 {
-    inp.1.windows(2).fold(0u32, |acc, p| acc + safe_part2(&inp.0[p[0]..p[1]]))
+fn part2_work(inp: &(Vec<i8>, Vec<usize>)) -> u32 {
+    inp.1
+        .windows(2)
+        .fold(0u32, |acc, p| acc + safe_part2(&inp.0[p[0]..p[1]]))
 }
 
-// pub fn part1(inp: &str) -> u32 {
-//     part1_work(&unpack_inp_unsafe(inp))
-// }
-
-// pub fn part2(inp: &str) -> u32 {
-//     part2_work(&unpack_inp_unsafe(inp))
-// }
-
-
-pub fn part1(inp: &str) -> u32 {
-    part1_work2(&unpack_inp_split(inp))
+pub fn part1(inp: &[u8]) -> u32 {
+    part1_work(&unpack_inp_split(inp))
 }
 
-pub fn part2(inp: &str) -> u32 {
-    part2_work2(&unpack_inp_split(inp))
+pub fn part2(inp: &[u8]) -> u32 {
+    part2_work(&unpack_inp_split(inp))
 }
