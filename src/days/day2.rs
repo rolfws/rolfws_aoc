@@ -28,8 +28,6 @@ fn unpack_inp_split(inp: &str) -> (Vec<i8>, Vec<usize>) {
             }
         }
     }
-    out_len.push(cnt);
-
     (out, out_len)
 }
 
