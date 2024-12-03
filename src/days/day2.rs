@@ -3,13 +3,13 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
 #[aoc_generator(day2)]
-fn unpack_inp_split(inp: &[u8]) -> (Vec<i8>, Vec<usize>) {
+fn unpack_inp_split(inp: &str) -> (Vec<i8>, Vec<usize>) {
     let mut out: Vec<i8> = Vec::with_capacity(8000);
     let mut out_len: Vec<usize> = Vec::with_capacity(1001);
     out_len.push(0);
     let mut to_push = 0i8;
     let mut cnt = 0;
-    for c in inp {
+    for c in inp.as_bytes() {
         match c {
             b'\n' => {
                 cnt += 1;
@@ -130,10 +130,10 @@ fn part2_work(inp: &(Vec<i8>, Vec<usize>)) -> u32 {
         .fold(0u32, |acc, p| acc + safe_part2(&inp.0[p[0]..p[1]]))
 }
 
-pub fn part1(inp: &[u8]) -> u32 {
+pub fn part1(inp: &str) -> u32 {
     part1_work(&unpack_inp_split(inp))
 }
 
-pub fn part2(inp: &[u8]) -> u32 {
+pub fn part2(inp: &str) -> u32 {
     part2_work(&unpack_inp_split(inp))
 }

@@ -17,7 +17,6 @@ fn main() {
     // println!("{:?}", t.elapsed() / runs);
     // let r = aoc24::day3::part2(&inp);
     let r = aoc24::load_day(3, true);
-    let r = aoc24::day3::part1_reg(&r);
     // let r = aoc24::day2::part2(&inp);
     println!("{r}");
 }

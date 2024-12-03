@@ -9,14 +9,15 @@ fn three_u8_to_u32(in1: u8, in2: u8, in3: u8) -> u32 {
 }
 
 #[allow(clippy::missing_safety_doc)]
-unsafe fn part_1_wrap(inp: &[u8]) -> u32 {
+unsafe fn part_1_wrap(inp: &str) -> u32 {
     let mut acc = 0;
     let mut i: usize = 0;
     let mut left_reg: u32;
     let mut right_reg: u32;
-    let inp = [inp, &[b'.';4]].concat();
-    let ptr = inp.as_ptr();
     // Max we read is from i..i+12, so we extend the &[u8] with 4 elements that will be faulty
+    let inp_s = [inp, "...."].concat();
+    let inp = inp_s.as_bytes();
+    let ptr = inp.as_ptr();
     
     while i < inp.len() - 12 {
         // println!("{:?}", std::str::from_utf8(&inp[i..i+4]));
@@ -200,15 +201,16 @@ pub fn part1_safe(inp: &[u8]) -> u32 {
 
 
 #[allow(clippy::missing_safety_doc)]
-unsafe fn part_2_core(inp: &[u8]) -> u32 {
+unsafe fn part_2_core(inp: &str) -> u32 {
     let mut doing = true;
     let mut acc = 0;
     let mut i: usize = 0;
     let mut left_reg: u32;
     let mut right_reg: u32;
-    let inp = [inp, &[b'.';4]].concat();
-    let ptr = inp.as_ptr();
     // Max we read is from i..i+12, so we extend the &[u8] with 4 elements that will be faulty
+    let inp_s = [inp, "...."].concat();
+    let inp = inp_s.as_bytes();
+    let ptr = inp.as_ptr();
     
     while i < inp.len() - 12 {
         if !doing {
@@ -321,18 +323,18 @@ unsafe fn part_2_core(inp: &[u8]) -> u32 {
     acc
 }
 
-use regex::Regex;
+// use regex::Regex;
 
-#[aoc(day3, part1, regex)]
-pub fn part1_reg(inp:&str) -> u32 {
-    let re = Regex::new(r"mul\((\d{1,3}),(\d{1,3})\)").unwrap();
-    re.captures_iter(inp).map(|c| c.extract()).fold(0u32, |acc, (_, [left, right])| 
-        acc + left.parse::<u32>().unwrap() * right.parse::<u32>().unwrap()
-    )
-}   
+// #[aoc(day3, part1, regex)]
+// pub fn part1_reg(inp:&str) -> u32 {
+//     let re = Regex::new(r"mul\((\d{1,3}),(\d{1,3})\)").unwrap();
+//     re.captures_iter(inp).map(|c| c.extract()).fold(0u32, |acc, (_, [left, right])| 
+//         acc + left.parse::<u32>().unwrap() * right.parse::<u32>().unwrap()
+//     )
+// }   
 
 #[aoc(day3, part1)]
-pub fn part1(inp:&[u8]) -> u32 {
+pub fn part1(inp:&str) -> u32 {
     unsafe {part_1_wrap(inp)}
 }
 
@@ -342,6 +344,6 @@ pub fn part1_s(inp:&[u8]) -> u32 {
 }
 
 #[aoc(day3, part2)]
-pub fn part2(inp:&[u8]) -> u32 {
+pub fn part2(inp:&str) -> u32 {
     unsafe {part_2_core(inp)}
 }
