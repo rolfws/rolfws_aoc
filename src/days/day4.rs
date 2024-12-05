@@ -1,181 +1,207 @@
-#![allow(unused)]
+// #![allow(unused)]
 use core::str;
 
 use aoc_runner_derive::aoc;
 
-fn xmax_match(inp: [u8; 4]) -> bool {
-    matches!(inp, [b'X', b'M', b'A', b'S'] | [b'S', b'A', b'M', b'X'])
-}
-
-unsafe fn part1_core(inp: &str) -> u32 {
-    let line_len: usize = inp.lines().next().unwrap().len() + 1; // Without \n
-    let line_num: usize = inp.lines().count();
-
-    let ptr = inp.as_ptr();
-    let mut x_cnt = 0u32;
-    let mut j: usize;
-
-    // Horizontal (flipped or unflipped)
-
-    for i in (0..line_num) {
-        let line_start = ptr.add(i * line_len);
-        j = 0;
-        while j < line_len - 4 {
-            // Another one because the \n
-            if xmax_match([
-                line_start.add(j).read(),
-                line_start.add(j + 1).read(),
-                line_start.add(j + 2).read(),
-                line_start.add(j + 3).read(),
-            ]) {
-                x_cnt += 1;
-                j += 3 // Last letter is an S/X so we we need to check for flip aswell
-            } else {
-                j += 1;
-            }
-        }
-    }
-
-    // Vertical (flipped or unflipped) (column, to skip more)
-    for i in (0..line_len - 1) {
-        let col_start = ptr.add(i);
-        j = 0;
-        while j < line_num - 3 {
-            if xmax_match([
-                col_start.add(j * line_len).read(),
-                col_start.add((j + 1) * line_len).read(),
-                col_start.add((j + 2) * line_len).read(),
-                col_start.add((j + 3) * line_len).read(),
-            ]) {
-                x_cnt += 1;
-                j += 3 // Last letter is an S/X so we we need to check for flip aswell
-            } else {
-                j += 1;
-            }
-        }
-    }
-
-    // S(.|\n){11}A(.|\n){11}M(.|\n){11}X
-    // X(.|\n){11}M(.|\n){11}A(.|\n){11}S
-
-    // Left top to right bottom
-    for i in (0..line_num - 3) {
-        let line_start = ptr.add(i * line_len);
-        j = 0;
-        while j < line_len - 4 {
-            // Another one because the \n
-            if xmax_match([
-                line_start.add(j).read(),
-                line_start.add(j + line_len + 1).read(),
-                line_start.add(j + 2 * line_len + 2).read(),
-                line_start.add(j + 3 * line_len + 3).read(),
-            ]) {
-                x_cnt += 1
-            }
-            j += 1
-        }
-    }
-
-    // right top to left bottom
-    for i in (0..line_num - 3) {
-        let line_start = ptr.add(i * line_len);
-        j = 3;
-        while j < line_len - 1 {
-            // Another one because the \n
-            if xmax_match([
-                line_start.add(j).read(),
-                line_start.add(j + line_len - 1).read(),
-                line_start.add(j + 2 * line_len - 2).read(),
-                line_start.add(j + 3 * line_len - 3).read(),
-            ]) {
-                x_cnt += 1
-            }
-            j += 1
-        }
-    }
-    x_cnt
+#[inline(always)]
+unsafe fn part1_xmas_count(x: u64, m: u64, a: u64, s: u64) -> u32 {
+    (x & m & a & s).count_ones()
 }
 
 unsafe fn part1_vector(inp: &str) -> u32 {
-    let line_len: usize = inp.lines().next().unwrap().len() + 1; // Without \n
-    let xb: Vec<bool> = inp.bytes().map(|b| b == b'X').collect();
-    let mb: Vec<bool> = inp.bytes().map(|b| b == b'X').collect();
-    let ab: Vec<bool> = inp.bytes().map(|b| b == b'X').collect();
-    let sb: Vec<bool> = inp.bytes().map(|b| b == b'X').collect();
+    let line_len: usize = inp.find('\n').unwrap() + 1;
+    let mut line_num = inp.len() / line_len;
+    if inp.len() % line_len != 0 {
+        line_num += 1; // Some times the last \n gets stripped, then the last line is incomplete
+    }
+
+    let mut xb: Vec<bool> = Vec::with_capacity(inp.len() + 8);
+    xb.extend(
+        inp.bytes()
+            .map(|b| b == b'X')
+            .chain(std::iter::repeat(false).take(8)),
+    );
+    let mut mb: Vec<bool> = Vec::with_capacity(inp.len() + 8);
+    mb.extend(
+        inp.bytes()
+            .map(|b| b == b'M')
+            .chain(std::iter::repeat(false).take(8)),
+    );
+    let mut ab: Vec<bool> = Vec::with_capacity(inp.len() + 8);
+    ab.extend(
+        inp.bytes()
+            .map(|b| b == b'A')
+            .chain(std::iter::repeat(false).take(8)),
+    );
+    //inp.bytes().map(|b| b == b'X').collect();
+    let mut sb: Vec<bool> = Vec::with_capacity(inp.len() + 8);
+    sb.extend(
+        inp.bytes()
+            .map(|b| b == b'S')
+            .chain(std::iter::repeat(false).take(8)),
+    );
     let mut x_cnt = 0;
-    let mut i = 0;
 
-    // If any wrapping is hit a \n is encoutered, which is false anyway
-    for i in 0..xb.len() - 3 {
-        if (xb[i] && mb[i + 1] && ab[i + 2] && sb[i + 3])
-            || (xb[i + 3] && mb[i + 2] && ab[i + 1] && sb[i + 1])
-        {
-            x_cnt += 1;
-        }
+    let x_ptr = xb.as_ptr();
+    let m_ptr = mb.as_ptr();
+    let a_ptr = ab.as_ptr();
+    let s_ptr = sb.as_ptr();
 
-        if (i < xb.len() - line_len * 3)
-            && ((xb[i] && mb[i + line_len] && ab[i + 2 * line_len] && sb[i + 3 * line_len])
-                || (sb[i] && ab[i + line_len] && mb[i + 2 * line_len] && xb[i + 3 * line_len]))
-        {
-            x_cnt += 1;
-        }
-        if (i < xb.len() - line_len * 3 - 3)
-            && ((xb[i] && mb[i + line_len + 1] && ab[i + 2 * line_len + 2] && sb[i + 3 * line_len + 3])
-                || (sb[i] && ab[i + line_len + 1] && mb[i + 2 * line_len + 2] && xb[i + 3 * line_len + 3]))
-        {
-            x_cnt += 1;
-        }
-        if (i < xb.len() - line_len * 3) 
-            && ((xb[i] && mb[i + line_len - 1] && ab[i + 2 * line_len - 2] && sb[i + 3 * line_len - 3])
-            || (sb[i] && ab[i + line_len - 1] && mb[i + 2 * line_len - 2] && xb[i + 3 * line_len - 3])) {
-                x_cnt += 1;
-            }
+    let mut reps = (line_num - 3) * line_len / 8;
+    if (line_num - 3) * line_len % 8 != 0 {
+        reps += 1;
+    }
+    let mut count = 0;
+    for _ in 0..reps {
+        // Horizontal
+        x_cnt += part1_xmas_count(
+            (x_ptr.add(count) as *const u64).read(),
+            (m_ptr.add(count + 1) as *const u64).read(),
+            (a_ptr.add(count + 2) as *const u64).read(),
+            (s_ptr.add(count + 3) as *const u64).read(),
+        );
+        x_cnt += part1_xmas_count(
+            (x_ptr.add(count + 3) as *const u64).read(),
+            (m_ptr.add(count + 2) as *const u64).read(),
+            (a_ptr.add(count + 1) as *const u64).read(),
+            (s_ptr.add(count) as *const u64).read(),
+        );
+
+        // Vertical
+        x_cnt += part1_xmas_count(
+            (x_ptr.add(count) as *const u64).read(),
+            (m_ptr.add(count + line_len) as *const u64).read(),
+            (a_ptr.add(count + 2 * line_len) as *const u64).read(),
+            (s_ptr.add(count + 3 * line_len) as *const u64).read(),
+        );
+        x_cnt += part1_xmas_count(
+            (x_ptr.add(count + 3 * line_len) as *const u64).read(),
+            (m_ptr.add(count + 2 * line_len) as *const u64).read(),
+            (a_ptr.add(count + line_len) as *const u64).read(),
+            (s_ptr.add(count) as *const u64).read(),
+        );
+        
+        // Bottom right
+        x_cnt += part1_xmas_count(
+            (x_ptr.add(count) as *const u64).read(),
+            (m_ptr.add(count + line_len + 1) as *const u64).read(),
+            (a_ptr.add(count + 2 * line_len + 2) as *const u64).read(),
+            (s_ptr.add(count + 3 * line_len + 3) as *const u64).read(),
+        );
+        x_cnt += part1_xmas_count(
+            (x_ptr.add(count + 3 * line_len + 3) as *const u64).read(),
+            (m_ptr.add(count + 2 * line_len + 2) as *const u64).read(),
+            (a_ptr.add(count + line_len + 1) as *const u64).read(),
+            (s_ptr.add(count) as *const u64).read(),
+        );
+
+        // Bottom left
+        x_cnt += part1_xmas_count(
+            (x_ptr.add(count) as *const u64).read(),
+            (m_ptr.add(count + line_len - 1) as *const u64).read(),
+            (a_ptr.add(count + 2 * line_len - 2) as *const u64).read(),
+            (s_ptr.add(count + 3 * line_len - 3) as *const u64).read(),
+        );
+        x_cnt += part1_xmas_count(
+            (x_ptr.add(count + 3 * line_len - 3) as *const u64).read(),
+            (m_ptr.add(count + 2 * line_len - 2) as *const u64).read(),
+            (a_ptr.add(count + line_len - 1) as *const u64).read(),
+            (s_ptr.add(count) as *const u64).read(),
+        );
+        count += 8;
+    }
+
+    for _ in reps..(xb.len() / 8) {
+        // Horizontal
+        x_cnt += part1_xmas_count(
+            (x_ptr.add(count) as *const u64).read(),
+            (m_ptr.add(count + 1) as *const u64).read(),
+            (a_ptr.add(count + 2) as *const u64).read(),
+            (s_ptr.add(count + 3) as *const u64).read(),
+        );
+        x_cnt += part1_xmas_count(
+            (x_ptr.add(count + 3) as *const u64).read(),
+            (m_ptr.add(count + 2) as *const u64).read(),
+            (a_ptr.add(count + 1) as *const u64).read(),
+            (s_ptr.add(count) as *const u64).read(),
+        );
+        count += 8;
     }
     x_cnt
 }
 
-fn check_xmas(inp: [u8; 4]) -> bool {
-    matches!(inp[..2], [b'M', b'S'] | [b'S', b'M'])
-        & matches!(inp[2..], [b'M', b'S'] | [b'S', b'M'])
+
+#[inline(always)]
+fn check_mas(m: u64, a:u64, s:u64) -> u64 {
+    m & a & s
 }
 
-unsafe fn part2_core(inp: &str) -> u32 {
-    let line_len: usize = inp.lines().next().unwrap().len() + 1; // Without \n
-    let line_num: usize = inp.lines().count();
 
-    let ptr = inp.as_ptr();
-    let mut x_cnt = 0u32;
-    let mut j: usize;
-    // We walk the inner box, then if we find an A, we check for X - MAS
-    for i in (1..line_num - 1) {
-        for j in (1..line_len - 2) {
-            let middle_ptr = ptr.add(i * line_len + j);
-            if (middle_ptr.read() == b'A')
-                && check_xmas([
-                    middle_ptr.sub(line_len + 1).read(),
-                    middle_ptr.add(line_len + 1).read(),
-                    middle_ptr.sub(line_len - 1).read(),
-                    middle_ptr.add(line_len - 1).read(),
-                ])
-            {
-                x_cnt += 1;
-            }
-        }
+unsafe fn part2_vec(inp: &str) -> u32 {
+    let line_len: usize = inp.find('\n').unwrap() + 1;
+    let mut line_num = inp.len() / line_len;
+    if inp.len() % line_len != 0 {
+        line_num += 1; // Some times the last \n gets stripped, then the last line is incomplete
+    }
+    let mut mb: Vec<bool> = Vec::with_capacity(inp.len() + 8);
+    mb.extend(
+        inp.bytes()
+            .map(|b| b == b'M')
+            .chain(std::iter::repeat(false).take(8)),
+    );
+    let mut ab: Vec<bool> = Vec::with_capacity(inp.len() + 8);
+    ab.extend(
+        inp.bytes()
+            .map(|b| b == b'A')
+            .chain(std::iter::repeat(false).take(8)),
+    );
+    let mut sb: Vec<bool> = Vec::with_capacity(inp.len() + 8);
+    sb.extend(
+        inp.bytes()
+            .map(|b| b == b'S')
+            .chain(std::iter::repeat(false).take(8)),
+    );
+    let mut x_cnt = 0;
+
+    let m_ptr = mb.as_ptr();
+    let a_ptr = ab.as_ptr();
+    let s_ptr = sb.as_ptr();
+    let mut count = line_len + 1;
+    let reps = (line_num - 2) * line_len / 8;
+    for _ in 0..reps {
+        let mid_a = (a_ptr.add(count) as *const u64).read();
+        let mas_1 = check_mas(
+            (m_ptr.add(count - line_len - 1) as *const u64).read(),
+            mid_a,
+            (s_ptr.add(count + line_len + 1) as *const u64).read()
+        ) | check_mas(
+            (m_ptr.add(count + line_len + 1) as *const u64).read(),
+            mid_a,
+            (s_ptr.add(count - line_len - 1) as *const u64).read()
+        );
+
+        let mas_2 = check_mas(
+            (m_ptr.add(count - line_len + 1) as *const u64).read(),
+            mid_a,
+            (s_ptr.add(count + line_len - 1) as *const u64).read()
+        ) | check_mas(
+            (m_ptr.add(count + line_len - 1) as *const u64).read(),
+            mid_a,
+            (s_ptr.add(count - line_len + 1) as *const u64).read()
+        );
+
+        x_cnt += (mas_2 & mas_1).count_ones();
+        count += 8;
     }
     x_cnt
 }
 
 #[aoc(day4, part1)]
 pub fn part1(inp: &str) -> u32 {
-    unsafe { part1_core(inp) }
-}
-
-#[aoc(day4, part1, vec)]
-pub fn part1_v(inp: &str) -> u32 {
     unsafe { part1_vector(inp) }
 }
 
 #[aoc(day4, part2)]
 pub fn part2(inp: &str) -> u32 {
-    unsafe { part2_core(inp) }
+    unsafe { part2_vec(inp) }
 }
