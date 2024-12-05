@@ -19,26 +19,26 @@ unsafe fn part1_vector(inp: &str) -> u32 {
     xb.extend(
         inp.bytes()
             .map(|b| b == b'X')
-            .chain(std::iter::repeat(false).take(8)),
+            .chain([false; 8]),
     );
     let mut mb: Vec<bool> = Vec::with_capacity(inp.len() + 8);
     mb.extend(
         inp.bytes()
             .map(|b| b == b'M')
-            .chain(std::iter::repeat(false).take(8)),
+            .chain([false; 8]),
     );
     let mut ab: Vec<bool> = Vec::with_capacity(inp.len() + 8);
     ab.extend(
         inp.bytes()
             .map(|b| b == b'A')
-            .chain(std::iter::repeat(false).take(8)),
+            .chain([false; 8]),
     );
     //inp.bytes().map(|b| b == b'X').collect();
     let mut sb: Vec<bool> = Vec::with_capacity(inp.len() + 8);
     sb.extend(
         inp.bytes()
             .map(|b| b == b'S')
-            .chain(std::iter::repeat(false).take(8)),
+            .chain([false; 8]),
     );
     let mut x_cnt = 0;
 
@@ -147,19 +147,19 @@ unsafe fn part2_vec(inp: &str) -> u32 {
     mb.extend(
         inp.bytes()
             .map(|b| b == b'M')
-            .chain(std::iter::repeat(false).take(8)),
+            .chain([false; 8]),
     );
     let mut ab: Vec<bool> = Vec::with_capacity(inp.len() + 8);
     ab.extend(
         inp.bytes()
             .map(|b| b == b'A')
-            .chain(std::iter::repeat(false).take(8)),
+            .chain([false; 8]),
     );
     let mut sb: Vec<bool> = Vec::with_capacity(inp.len() + 8);
     sb.extend(
         inp.bytes()
             .map(|b| b == b'S')
-            .chain(std::iter::repeat(false).take(8)),
+            .chain([false; 8]),
     );
     let mut x_cnt = 0;
 

@@ -6,7 +6,7 @@ fn main() {
     let runs = 100_000;
     let t = Instant::now();
     for _ in 0..runs {
-        let r = aoc24::day4::part2(&inp);
+        let r = aoc24::day4::part1(&inp);
     }
     println!("{:?}", t.elapsed() / runs);
 
