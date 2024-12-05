@@ -38,6 +38,7 @@ dependencies = [
  "aoc-runner",
  "aoc-runner-derive",
  "fxhash",
+ "memchr",
 ]
 
 [[package]]
