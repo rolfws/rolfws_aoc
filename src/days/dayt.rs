@@ -1,3 +1,5 @@
+use aoc_runner_derive::aoc;
+
 unsafe fn part1_inner(inp:&str) -> u32 {
     0
 }
