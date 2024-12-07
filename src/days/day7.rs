@@ -82,7 +82,7 @@ fn consume_test_mul2(test: u64, buf: &[u64]) -> bool {
 fn consume_test_add2(test: u64, buf: &[u64]) -> bool {
     if buf.len() == 1 {
         test == buf[0]
-    } else if test < buf[buf.len() - 1] {
+    } else if test <= buf[buf.len() - 1] {
         false
     } else {
         let last = buf.len() - 1;

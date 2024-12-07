@@ -133,6 +133,8 @@ unsafe fn check_loop(start_row: usize, start_col: usize, obs: [bool; RL * RN]) -
 
     // println!("{dir:?}");
     let mut in_map = true;
+    // We loop till we hit an obstacle and go in a direction we have done before, 
+    // only keep track as this means at most 1 walk direction till loop is detected.
     while in_map {
         match dir {
             Dir::Up => {
@@ -142,10 +144,11 @@ unsafe fn check_loop(start_row: usize, start_col: usize, obs: [bool; RL * RN]) -
                     if vr_ptr.add((obstacle_row + 1) * RL + cur_col).read() {
                         return true;
                     }
-
-                    for r in obstacle_row + 1..=cur_row {
-                        vu_ptr.add(r + cur_col * RN).write(true);
-                    }
+                    vu_ptr.add(cur_row + cur_col * RN).write(true);
+                    vu_ptr.add(obstacle_row + 1 + cur_col * RN).write(true);
+                    // for r in obstacle_row + 1..=cur_row {
+                    //     vu_ptr.add(r + cur_col * RN).write(true);
+                    // }
                     cur_row = obstacle_row + 1;
                     dir = Dir::RI;
                 } else {
@@ -160,9 +163,11 @@ unsafe fn check_loop(start_row: usize, start_col: usize, obs: [bool; RL * RN]) -
                         return true;
                     }
 
-                    for c in cur_col..obstacle_col {
-                        vr_ptr.add(cur_row * RL + c).write(true);
-                    }
+                    vr_ptr.add(cur_row * RL + cur_col).write(true);
+                    vr_ptr.add(cur_row * RL + obstacle_col - 1).write(true);
+                    // for c in cur_col..obstacle_col {
+                    //     vr_ptr.add(cur_row * RL + c).write(true);
+                    // }
                     cur_col = obstacle_col - 1;
                     dir = Dir::DO;
                 } else {
@@ -176,9 +181,11 @@ unsafe fn check_loop(start_row: usize, start_col: usize, obs: [bool; RL * RN]) -
                     if vl_ptr.add((obstacle_row - 1) * RL + cur_col).read() {
                         return true;
                     }
-                    for r in cur_row..obstacle_row {
-                        vd_ptr.add(r + cur_col * RN).write(true);
-                    }
+                    vd_ptr.add(cur_row + cur_col * RN).write(true);
+                    vd_ptr.add(obstacle_row - 1 + cur_col * RN).write(true);
+                    // for r in cur_row..obstacle_row {
+                    //     vd_ptr.add(r + cur_col * RN).write(true);
+                    // }
                     cur_row = obstacle_row - 1;
                     dir = Dir::LE;
                 } else {
@@ -192,9 +199,11 @@ unsafe fn check_loop(start_row: usize, start_col: usize, obs: [bool; RL * RN]) -
                     if vu_ptr.add(cur_row + (obstacle_col + 1) * RN).read() {
                         return true;
                     }
-                    for c in obstacle_col + 1..=cur_col {
-                        vl_ptr.add(cur_row * RL + c).write(true);
-                    }
+                    vl_ptr.add(cur_row * RL + obstacle_col + 1).write(true);
+                    vl_ptr.add(cur_row * RL + cur_col).write(true);
+                    // for c in obstacle_col + 1..=cur_col {
+                    //     vl_ptr.add(cur_row * RL + c).write(true);
+                    // }
                     cur_col = obstacle_col + 1;
                     dir = Dir::Up;
                 } else {
