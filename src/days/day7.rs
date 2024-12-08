@@ -1,5 +1,5 @@
 use aoc_runner_derive::aoc;
-use memchr::memchr_iter;
+use memchr::{memchr2_iter, memchr_iter};
 
 fn fast_parseu64(slc: &[u8]) -> u64 {
     let mut out = 0u64;
@@ -25,7 +25,7 @@ fn consume_test_mul(test: u64, buf: &[u64]) -> bool {
 fn consume_test_add(test: u64, buf: &[u64]) -> bool {
     if buf.len() == 1 {
         test == buf[0]
-    } else if test < buf[buf.len() - 1] {
+    } else if test <= buf[buf.len() - 1] {
         false
     } else {
         let last = buf.len() - 1;
@@ -65,6 +65,14 @@ unsafe fn part1_inner_opt(inp: &[u8]) -> u64 {
     ok_cnt
 }
 
+macro_rules! cons_test {
+    ($rem:ident, $buf:ident, $last:ident) => {
+        consume_test_mul2($rem, &$buf[..$last])
+        || consume_test_con($rem, &$buf[..$last])
+        || consume_test_add2($rem, &$buf[..$last]) // Least chance to early terminate, as rem most of the time is big enough.
+    };
+}
+
 fn consume_test_mul2(test: u64, buf: &[u64]) -> bool {
     if buf.len() == 1 {
         test == buf[0]
@@ -73,9 +81,7 @@ fn consume_test_mul2(test: u64, buf: &[u64]) -> bool {
     } else {
         let last = buf.len() - 1;
         let rem = test / buf[last];
-        consume_test_mul2(rem, &buf[..last])
-            || consume_test_add2(rem, &buf[..last])
-            || consume_test_con(rem, &buf[..last])
+        cons_test!(rem, buf, last)
     }
 }
 
@@ -87,24 +93,24 @@ fn consume_test_add2(test: u64, buf: &[u64]) -> bool {
     } else {
         let last = buf.len() - 1;
         let rem = test - buf[last];
-        consume_test_mul2(rem, &buf[..last])
-            || consume_test_add2(rem, &buf[..last])
-            || consume_test_con(rem, &buf[..last])
+        cons_test!(rem, buf, last)
     }
 }
 
 fn consume_test_con(test: u64, buf: &[u64]) -> bool {
-    let ints = 10u64.pow(buf[buf.len() - 1].ilog10() + 1);
+    
     if buf.len() == 1 {
-        test == buf[0]
-    } else if test % ints != buf[buf.len() - 1] {
+        return test == buf[0]
+    } 
+    
+    let ints = 10u64.pow(buf[buf.len() - 1].ilog10() + 1);
+
+    if test % ints != buf[buf.len() - 1] {
         false
     } else {
         let last = buf.len() - 1;
         let rem = test / ints;
-        consume_test_mul2(rem, &buf[..last])
-            || consume_test_add2(rem, &buf[..last])
-            || consume_test_con(rem, &buf[..last])
+        cons_test!(rem, buf, last)
     }
 }
 
@@ -115,7 +121,8 @@ unsafe fn part2_inner_opt(inp: &[u8]) -> u64 {
     let mut len: usize;
     let mut ok_cnt = 0u64;
     let buf_ptr = buf.as_mut_ptr();
-    for (new_row, new_split) in memchr_iter(b'\n', inp).zip(memchr_iter(b':', inp)) {
+    let mut chr_iter = memchr2_iter(b':', b'\n', inp);
+    while let (Some(new_split), Some(new_row)) = (chr_iter.next(), chr_iter.next()) {
         let test = fast_parseu64(&inp[prev..new_split]);
         num_start = new_split + 2;
         len = 0;
@@ -131,14 +138,11 @@ unsafe fn part2_inner_opt(inp: &[u8]) -> u64 {
         }
         prev = new_row + 1;
 
-        if consume_test_mul2(test, &buf[..len])
-        || consume_test_add2(test, &buf[..len])
-        || consume_test_con(test, &buf[..len])
+        if cons_test!(test, buf, len)
         {
             ok_cnt += test;
         }
     }
-
     ok_cnt
 }
 
