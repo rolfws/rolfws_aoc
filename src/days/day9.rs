@@ -142,7 +142,7 @@ unsafe fn part2_inner_opt(inp: &[u8]) -> u64 {
                 let num_b = a_cnt.get_unchecked_mut(gap_ind);
                 let m = e_num as u64;
                 ans += (m * (2 * *num_b + m + 1) / 2) * e_ind as u64;
-                *num_b += e_num as u64;
+                *num_b += m;
                 if gap_idx > 0 {
                     gaps[gap_idx - 1].push(Reverse(gap_ind));
                 }

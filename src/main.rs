@@ -2,15 +2,15 @@
 
 use std::time::Instant;
 fn main() {
-    let inp = aoc24::load_day(9, false);
+    let inp = aoc24::load_day(10, false);
     let runs = 10000;
     let t = Instant::now();
     for _ in 0..runs {
-        let r = aoc24::day9::part2(&inp);
+        let r = aoc24::day10::part1(&inp);
     }
     println!("{:?}", t.elapsed() / runs);
 
-    // let inp = aoc24::load_day(9, false);
+    // let inp = aoc24::load_day(10, false);
     
     // println!("{r}");
 
