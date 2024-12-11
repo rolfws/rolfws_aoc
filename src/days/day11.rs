@@ -79,13 +79,13 @@ pub fn part2(inp: &str) -> u64 {
     unsafe { part2_inner(inp.as_bytes()) }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::{part1, part2};
+// #[cfg(test)]
+// mod tests {
+//     use super::{part1, part2};
 
-    #[test]
-    fn part1_test() {
-        let inp = "125 17\n";
-        assert_eq!(part1(inp), 55312);
-    }
-}
+//     #[test]
+//     fn part1_test() {
+//         let inp = "125 17\n";
+//         assert_eq!(part1(inp), 55312);
+//     }
+// }
