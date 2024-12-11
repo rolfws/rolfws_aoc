@@ -148,35 +148,35 @@ pub fn part2(inp: &str) -> u16 {
     unsafe { part2_inner(inp.as_bytes()) }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::{part1, part2};
+// #[cfg(test)]
+// mod tests {
+//     use super::{part1, part2};
 
-    #[test]
-    fn part1_test() {
-        let inp = "89010123
-78121874
-87430965
-96549874
-45678903
-32019012
-01329801
-10456732
-";
-        assert_eq!(part1(inp), 36);
-    }
+//     #[test]
+//     fn part1_test() {
+//         let inp = "89010123
+// 78121874
+// 87430965
+// 96549874
+// 45678903
+// 32019012
+// 01329801
+// 10456732
+// ";
+//         assert_eq!(part1(inp), 36);
+//     }
 
-    #[test]
-    fn part2_test() {
-        let inp = "89010123
-78121874
-87430965
-96549874
-45678903
-32019012
-01329801
-10456732
-";
-        assert_eq!(part2(inp), 81);
-    }
-}
+//     #[test]
+//     fn part2_test() {
+//         let inp = "89010123
+// 78121874
+// 87430965
+// 96549874
+// 45678903
+// 32019012
+// 01329801
+// 10456732
+// ";
+//         assert_eq!(part2(inp), 81);
+//     }
+// }

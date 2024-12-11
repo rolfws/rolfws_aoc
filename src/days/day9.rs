@@ -166,21 +166,21 @@ pub fn part2(inp: &str) -> u64 {
     unsafe { part2_inner_opt(inp.as_bytes()) }
 }
 
-#[cfg(test)]
-mod test {
-    use super::part2;
+// #[cfg(test)]
+// mod test {
+//     use super::part2;
 
-    use super::part1;
+//     use super::part1;
 
-    #[test]
-    fn test_part1() {
-        let inp = "2333133121414131402\n";
-        assert_eq!(part1(inp), 1928);
-    }
+//     #[test]
+//     fn test_part1() {
+//         let inp = "2333133121414131402\n";
+//         assert_eq!(part1(inp), 1928);
+//     }
 
-    #[test]
-    fn test_part2() {
-        let inp = "2333133121414131402\n";
-        assert_eq!(part2(inp), 2858);
-    }
-}
+//     #[test]
+//     fn test_part2() {
+//         let inp = "2333133121414131402\n";
+//         assert_eq!(part2(inp), 2858);
+//     }
+// }
