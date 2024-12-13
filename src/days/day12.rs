@@ -1,10 +1,10 @@
-#![allow(unused)]
+// #![allow(unused)]
 
 use aoc_runner_derive::aoc;
 use fxhash::FxHashSet;
 
 #[cfg(test)]
-const SL: usize = 5;
+const SL: usize = 10;
 
 #[cfg(not(test))]
 const SL: usize = 140;
@@ -95,145 +95,152 @@ enum Dir {
 }
 
 impl Dir {
-    fn rotate_right(&self) -> Dir {
+    fn map_offset(&self) -> usize {
         match self {
-            Dir::U => Dir::R,
-            Dir::D => Dir::L,
-            Dir::R => Dir::D,
-            Dir::L => Dir::U,
-        }
-    }
-
-    fn rotate_left(&self) -> Dir {
-        match self {
-            Dir::U => Dir::L,
-            Dir::D => Dir::R,
-            Dir::R => Dir::U,
-            Dir::L => Dir::D,
-        }
-    }
-
-    fn check_rside(&self, i: usize) -> Option<usize> {
-        match self {
-            Dir::U => {
-                if i % SL < SL - 1 {
-                    Some(i + 1)
-                } else {
-                    None
-                }
-            }
-            Dir::D => {
-                if i % SL > 0 {
-                    Some(i - 1)
-                } else {
-                    None
-                }
-            }
-            Dir::R => {
-                if i < SL * (SL - 1) {
-                    Some(i + SL)
-                } else {
-                    None
-                }
-            }
-            Dir::L => {
-                if i >= SL {
-                    Some(i - SL)
-                } else {
-                    None
-                }
-            }
-        }
-    }
-
-    fn check_front(&self, i: usize) -> Option<usize> {
-        match self {
-            Dir::R => {
-                if i % SL < SL - 1 {
-                    Some(i + 1)
-                } else {
-                    None
-                }
-            }
-            Dir::L => {
-                if i % SL > 0 {
-                    Some(i - 1)
-                } else {
-                    None
-                }
-            }
-            Dir::D => {
-                if i < SL * (SL - 1) {
-                    Some(i + SL)
-                } else {
-                    None
-                }
-            }
-            Dir::U => {
-                if i >= SL {
-                    Some(i - SL)
-                } else {
-                    None
-                }
-            }
-        }
-    }
-
-    fn corner_offset(&self, other: &Self) -> (usize, usize) {
-        match (self, other) {
-            (Dir::D, Dir::L) => (0, 0),
-            (Dir::D, Dir::R) => (1, 0),
-
-            (Dir::U, Dir::L) => (0, 1),
-            (Dir::U, Dir::R) => (1, 1),
-
-            (Dir::R, Dir::U) => (1, 1),
-            (Dir::R, Dir::D) => (1, 0),
-
-            (Dir::L, Dir::U) => (0, 1),
-            (Dir::L, Dir::D) => (0, 0),
-            _ => unreachable!("Not possible combination"),
+            Dir::U => 0,
+            Dir::R => 1,
+            Dir::D => 2,
+            Dir::L => 3,
         }
     }
 }
 
-// unsafe fn part2_edge_walk(inp: &[u8], start: usize) -> u32 {
-    // let mut vertices: Vec<(usize, usize)> = Vec::with_capacity(100);
-    // let needle = *inp.get_unchecked(start / SL * (SL + 1) + start % SL); // \n
-    // let mut dir = Dir::D; // We always start at the most top left element
-    // vertices.clear();
-    // vertices.push((start / SL, start % SL));
-    // let mut cur = start;
-    // let mut k = 0;
-    // while cur != start || dir != Dir::L {
-    //     if let Some(j) = dir.check_rside(cur) {
-    //         if *inp.get_unchecked(j / SL * (SL + 1) + j % SL) == needle {
-    //             let n_dir = dir.rotate_right();
-    //             let off = dir.corner_offset(&n_dir);
-    //             vertices.push((cur / SL + off.0, cur % SL + off.1));
-    //             cur = j;
-    //             dir = n_dir;
-    //             continue;
-    //         }
-    //     }
-    //     if let Some(j) = dir.check_front(cur) {
-    //         if *inp.get_unchecked(j / SL * (SL + 1) + j % SL) == needle {
-    //             cur = j;
-    //             continue;
-    //         }
-    //     }
-
-    //     let n_dir = dir.rotate_left();
-    //     let off = dir.corner_offset(&n_dir);
-    //     vertices.push((cur / SL + off.0, cur % SL + off.1));
-    //     dir = n_dir;
-    // }
-    // vertices.len() as u32
-// }
-
 unsafe fn part2_inner(inp: &[u8]) -> u32 {
-    // let mut line_map 
-    0
+    let mut line_map = [[0u16; 4]; SL * SL];
+    let mut line_ind = 0;
+    // First line and last line only effect first and last row
+    let mut prev: u8;
+    for r in 0..SL {
+        prev = 0u8;
+        for c in 0..SL {
+            // top lines
+            if *inp.get_unchecked(r * (SL + 1) + c) != prev {
+                line_ind += 1;
+            }
+            prev = *inp.get_unchecked(r * (SL + 1) + c);
+            if r == 0 || prev != *inp.get_unchecked((r - 1) * (SL + 1) + c) {
+                *line_map
+                    .get_unchecked_mut(r * SL + c)
+                    .get_unchecked_mut(Dir::U.map_offset()) = line_ind;
+            } else {
+                line_ind += 1;
+            }
+        }
+        // bottom lines
+        prev = 0u8;
+        for c in 0..SL {
+            // top lines
+            if *inp.get_unchecked(r * (SL + 1) + c) != prev {
+                line_ind += 1;
+            }
+            prev = *inp.get_unchecked(r * (SL + 1) + c);
+            if r == SL - 1 || prev != *inp.get_unchecked((r + 1) * (SL + 1) + c) {
+                *line_map
+                    .get_unchecked_mut(r * SL + c)
+                    .get_unchecked_mut(Dir::D.map_offset()) = line_ind;
+            } else {
+                line_ind += 1;
+            }
+        }
+    }
+
+    for c in 0..SL {
+        prev = 0u8;
+        for r in 0..SL {
+            // top lines
+            if *inp.get_unchecked(r * (SL + 1) + c) != prev {
+                line_ind += 1;
+            }
+            prev = *inp.get_unchecked(r * (SL + 1) + c);
+            if c == 0 || prev != *inp.get_unchecked(r * (SL + 1) + c - 1) {
+                *line_map
+                    .get_unchecked_mut(r * SL + c)
+                    .get_unchecked_mut(Dir::L.map_offset()) = line_ind;
+            } else {
+                line_ind += 1;
+            }
+        }
+
+        prev = 0u8;
+        for r in 0..SL {
+            // top lines
+            if *inp.get_unchecked(r * (SL + 1) + c) != prev {
+                line_ind += 1;
+            }
+            prev = *inp.get_unchecked(r * (SL + 1) + c);
+            if c == SL - 1 || prev != *inp.get_unchecked(r * (SL + 1) + c + 1) {
+                *line_map
+                    .get_unchecked_mut(r * SL + c)
+                    .get_unchecked_mut(Dir::R.map_offset()) = line_ind;
+            }else {
+                line_ind += 1;
+            }
+        }
+    }
+
+    let mut visited = [false; SL * SL];
+    let mut needle: u8;
+    let mut tot: u32 = 0;
+    let mut que = FxHashSet::<usize>::default();
+    que.reserve(SL * 2);
+
+    let mut sides = FxHashSet::<u16>::default();
+    sides.reserve(150);
+
+    let mut area: u32;
+
+    for i in 0..SL * SL {
+        if *visited.get_unchecked(i) {
+            continue;
+        }
+        needle = *inp.get_unchecked(i / SL * (SL + 1) + i % SL); // \n
+        que.insert(i);
+        sides.clear();
+        area = 0;
+
+        while !que.is_empty() {
+            let j = *que.iter().next().expect("not empty");
+            *visited.get_unchecked_mut(j) = true;
+            area += 1;
+            for v in line_map[j] {
+                if v != 0 {
+                    sides.insert(v);
+                }
+            }
+            que.remove(&j);
+
+            if j >= SL
+                && *inp.get_unchecked((j - SL) / SL * (SL + 1) + (j - SL) % SL) == needle
+                && !*visited.get_unchecked(j - SL)
+            {
+                que.insert(j - SL);
+            };
+
+            if j < SL * (SL - 1)
+                && *inp.get_unchecked((j + SL) / SL * (SL + 1) + (j + SL) % SL) == needle
+                && !*visited.get_unchecked(j + SL)
+            {
+                que.insert(j + SL);
+            };
+
+            if j % SL >= 1
+                && *inp.get_unchecked((j - 1) / SL * (SL + 1) + (j - 1) % SL) == needle
+                && !*visited.get_unchecked(j - 1)
+            {
+                que.insert(j - 1);
+            };
+
+            if j % SL < SL - 1
+                && *inp.get_unchecked((j + 1) / SL * (SL + 1) + (j + 1) % SL) == needle
+                && !*visited.get_unchecked(j + 1)
+            {
+                que.insert(j + 1);
+            };
+        }
+        tot += sides.len() as u32 * area;
+        // break;
+    }
+    tot
 }
 
 #[aoc(day12, part1)]
@@ -252,7 +259,8 @@ mod tests {
 
     #[test]
     fn part1_test() {
-        let inp = "RRRRIICCFF
+        let inp = "
+RRRRIICCFF
 RRRRIICCCF
 VVRRRCCFFF
 VVRCCCJFFF
@@ -268,24 +276,17 @@ MMMISSJEEE
 
     #[test]
     fn part2_test() {
-        let inp = "EEEEE
-EXXXX
-EEEEE
-EXXXX
-EEEEE
+        let inp = "RRRRIICCFF
+RRRRIICCCF
+VVRRRCCFFF
+VVRCCCJFFF
+VVVVCJJCFE
+VVIVCCJJEE
+VVIIICJJEE
+MIIIIIJJEE
+MIIISIJEEE
+MMMISSJEEE
 ";
-        assert_eq!(part2(inp), 1206);
-        //         let inp = "RRRRIICCFF
-        // RRRRIICCCF
-        // VVRRRCCFFF
-        // VVRCCCJFFF
-        // VVVVCJJCFE
-        // VVIVCCJJEE
-        // VVIIICJJEE
-        // MIIIIIJJEE
-        // MIIISIJEEE
-        // MMMISSJEEE
-        // ";
-        //         assert_eq!(part2(inp), 1206)
+        assert_eq!(part2(inp), 1206)
     }
 }
