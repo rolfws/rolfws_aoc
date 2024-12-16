@@ -1,10 +1,6 @@
-#![allow(unused)]
-
-use std::hash::BuildHasher;
 
 use aoc_runner_derive::aoc;
-use fxhash::{FxBuildHasher, FxHashSet, FxHasher};
-use itertools::izip;
+use fxhash::FxHashSet;
 
 #[cfg(test)]
 const S: usize = 10;
@@ -76,24 +72,9 @@ unsafe fn part1_inner(inp: &[u8]) -> usize {
                     cur -= S;
                 }
             }
-            _ => {}
+            _ => {unreachable!()} // Inputs are limited to these 4 cases
         }
     }
-
-    // for r in 0..S {
-    //     println!(
-    //         "{:?}",
-    //         izip!(&walls[r * S..(r + 1) * S], &boxs[r * S..(r + 1) * S])
-    //             .map(|(&w, &b)| if w {
-    //                 '#'
-    //             } else if b {
-    //                 'O'
-    //             } else {
-    //                 '.'
-    //             })
-    //             .collect::<String>()
-    //     );
-    // }
     boxs.into_iter().enumerate().fold(
         0,
         |acc, (i, b)| if b { acc + i / S * 100 + i % S } else { acc },
@@ -146,11 +127,9 @@ unsafe fn part2_inner(inp: &[u8]) -> usize {
         }
     }
 
-    let mut indbuffer: [FxHashSet<usize>; S] = core::array::from_fn(|_| {
-        FxHashSet::with_capacity_and_hasher(50, fxhash::FxBuildHasher::default())
+    let mut indbuffer: [FxHashSet<usize>; 15] = core::array::from_fn(|_| {
+        FxHashSet::with_capacity_and_hasher(30, fxhash::FxBuildHasher::default())
     });
-    let mut i = 0;
-    #[allow(clippy::never_loop)]
     for &step in inp[S * (S + 1) + 1..].iter() {
         // println!("{}")
         match step {
@@ -271,7 +250,7 @@ unsafe fn part2_inner(inp: &[u8]) -> usize {
                     cur -= 2 * S;
                 }
             }
-            _ => {}
+            _ => {unreachable!()}
         }
     }
     boxs.into_iter().enumerate().fold(0, |acc, (i, b)| {
