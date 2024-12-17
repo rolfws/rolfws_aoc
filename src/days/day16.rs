@@ -135,6 +135,7 @@ unsafe fn part1_inner(inp: &[u8]) -> u32 {
     part1_move(cur, cur_dir, 0, &mut visited, &walls).unwrap().into()
 }
 
+#[allow(clippy::comparison_chain)]
 unsafe fn part2_move(
     cur: usize,
     cur_dir: Dir,
