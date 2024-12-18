@@ -19,21 +19,6 @@ fn fast_parse(slc: &[u8]) -> usize {
     out
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-struct CellPrio(usize, usize);
-
-impl PartialOrd for CellPrio {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for CellPrio {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        other.0.cmp(&self.0) // Reverse as lower value needs to give higer proio
-    }
-}
-
 unsafe fn load_blocks(inp: &[u8], take: usize) -> [bool; S * S] {
     let mut blocked = [false; S * S];
     let mut prev = 0;
@@ -48,6 +33,7 @@ unsafe fn load_blocks(inp: &[u8], take: usize) -> [bool; S * S] {
     blocked
 }
 
+// In reality this is not A* anymore, just bfs
 unsafe fn a_star_que(blocked: [bool; S * S]) -> usize {
     let mut closed = [false; S * S];
     let mut gs = [usize::MAX; S * S];
@@ -57,12 +43,12 @@ unsafe fn a_star_que(blocked: [bool; S * S]) -> usize {
     fs[0] = 2 * S - 2;
 
     // let mut open: BinaryHeap<CellPrio> = BinaryHeap::with_capacity(S);
-    let mut open: VecDeque<CellPrio> = VecDeque::with_capacity(S);
-    open.push_back(CellPrio(0, 0));
+    let mut open: VecDeque<usize> = VecDeque::with_capacity(S);
+    open.push_back(0);
     let end = S * S - 1;
     let mut out: usize = 0;
     'outer: while !open.is_empty() {
-        let CellPrio(_, node_idx) = open.pop_front().expect("not empty");
+        let node_idx = open.pop_front().expect("not empty");
         *closed.get_unchecked_mut(node_idx) = true;
         // for i in dirs.iter().filter_map(|d| d.offset(node_idx)) {
         if node_idx >= S {
@@ -76,7 +62,7 @@ unsafe fn a_star_que(blocked: [bool; S * S]) -> usize {
                     let h_new = (S - 1 - i % S) + (S - 1 - i / S);
                     let f_new = g_new + h_new;
                     if *fs.get_unchecked(i) > f_new {
-                        open.push_back(CellPrio(f_new, i));
+                        open.push_back(i);
                         *fs.get_unchecked_mut(i) = f_new;
                         *gs.get_unchecked_mut(i) = g_new;
                     }
@@ -94,7 +80,7 @@ unsafe fn a_star_que(blocked: [bool; S * S]) -> usize {
                     let h_new = (S - 1 - i % S) + (S - 1 - i / S);
                     let f_new = g_new + h_new;
                     if *fs.get_unchecked(i) > f_new {
-                        open.push_back(CellPrio(f_new, i));
+                        open.push_back(i);
                         *fs.get_unchecked_mut(i) = f_new;
                         *gs.get_unchecked_mut(i) = g_new;
                     }
@@ -112,7 +98,7 @@ unsafe fn a_star_que(blocked: [bool; S * S]) -> usize {
                     let h_new = (S - 1 - i % S) + (S - 1 - i / S);
                     let f_new = g_new + h_new;
                     if *fs.get_unchecked(i) > f_new {
-                        open.push_back(CellPrio(f_new, i));
+                        open.push_back(i);
                         *fs.get_unchecked_mut(i) = f_new;
                         *gs.get_unchecked_mut(i) = g_new;
                     }
@@ -130,7 +116,7 @@ unsafe fn a_star_que(blocked: [bool; S * S]) -> usize {
                     let h_new = (S - 1 - i % S) + (S - 1 - i / S);
                     let f_new = g_new + h_new;
                     if *fs.get_unchecked(i) > f_new {
-                        open.push_back(CellPrio(f_new, i));
+                        open.push_back(i);
                         *fs.get_unchecked_mut(i) = f_new;
                         *gs.get_unchecked_mut(i) = g_new;
                     }
