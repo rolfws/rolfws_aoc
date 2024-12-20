@@ -99,7 +99,7 @@ unsafe fn make_pattern_cnt<'a: 'b, 'b>(
 unsafe fn part2_inner(inp: &[u8]) -> u64 {
     let (towels, patterns) = read_towels(inp);
     let mut cache: FxHashMap<&[u8], u64> = FxHashMap::default();
-    cache.reserve(20000);
+    cache.reserve(30000);
     let mut cnt = 0;
     for pat in patterns {
         cnt += make_pattern_cnt(pat, &towels, &mut cache);
