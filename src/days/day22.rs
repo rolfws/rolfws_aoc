@@ -1,7 +1,4 @@
-#![allow(unused)]
-
-use std::slice::Windows;
-
+// #![allow(unused)]
 use aoc_runner_derive::aoc;
 use memchr::memchr_iter;
 
@@ -46,14 +43,13 @@ unsafe fn part2_inner_o(inp:&[u8]) -> u16 {
     let mut out = [0u16; 19 * 19 * 19 * 19];
     let mut prev = 0;
     let mut iter = memchr_iter(b'\n', inp);
-    let mut cnt = 0;
     let mut change = [0usize; 2000];
     let mut bananas = [0u16; 2000];
     let w_ptr = change.as_ptr();
     while prev < inp.len() {
         let mut seen = [false; 19 * 19 * 19 * 19];
         let next = iter.next().unwrap_or(inp.len());
-        let mut inp = parse_u8(&inp[prev..next]);
+        let inp = parse_u8(&inp[prev..next]);
         prev = next + 1;
         let _ = change.iter_mut().zip(bananas.iter_mut()).fold(inp, |state, (c, b)| {
             let evolved = evolve_secret(state);
